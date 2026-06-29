@@ -21,14 +21,18 @@ export function createEvent(
   }
 ): Event {
   const now = new Date().toISOString();
+  const status = data.status ?? "draft";
+  // Default inteligente: un evento publicado arranca vendiendo; uno en draft/
+  // cancelado, cerrado. Se puede sobrescribir con --saleStatus.
+  const saleStatus = data.saleStatus ?? (status === "published" ? "active" : "closed");
   const event: Event = {
     id: generateId("EVT"),
     accountId: state.account.id,
     name: data.name,
     description: data.description,
     location: data.location,
-    status: data.status ?? "draft",
-    saleStatus: data.saleStatus ?? "closed",
+    status,
+    saleStatus,
     createdAt: now,
     updatedAt: now,
   };
