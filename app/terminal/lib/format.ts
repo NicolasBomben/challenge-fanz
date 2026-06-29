@@ -1,0 +1,40 @@
+import type { CLIResponse } from "@/lib/types";
+import { RESET, GREEN, RED, YELLOW, DIM, BOLD } from "./ansi";
+
+/**
+ * Formateo de texto para la terminal. Funciones PURAS: reciben datos, devuelven
+ * strings con códigos ANSI (usando "\n" como salto; el caller los convierte a
+ * "\r\n" al escribir en xterm). No dependen de xterm ni del DOM → testeables.
+ */
+
+/** Texto de bienvenida que se muestra al abrir la terminal. */
+export function banner(): string {
+  return (
+    `${BOLD}${GREEN}Fanz CLI${RESET} — ticketing para personas y agentes\n` +
+    `${DIM}Empezá con:${RESET} login --token mock_admin   ${DIM}|${RESET}   help   ${DIM}|${RESET}   clear\n` +
+    `${DIM}Tokens: mock_admin (lectura+escritura), mock_readonly (solo lectura)${RESET}`
+  );
+}
+
+/**
+ * Convierte un CLIResponse en el texto a mostrar:
+ *   - error      → línea roja
+ *   - message    → verde (o amarillo si es dry-run)
+ *   - data       → JSON formateado en gris
+ * Devuelve "" si no hay nada que mostrar (ok sin message ni data).
+ */
+export function renderResponse(res: CLIResponse): string {
+  if (!res.ok) {
+    return `${RED}✗ ${res.error ?? "Unknown error"}${RESET}`;
+  }
+
+  const lines: string[] = [];
+  if (res.message) {
+    const color = res.dryRun ? YELLOW : GREEN;
+    lines.push(`${color}${res.message}${RESET}`);
+  }
+  if (res.data !== undefined) {
+    lines.push(`${DIM}${JSON.stringify(res.data, null, 2)}${RESET}`);
+  }
+  return lines.join("\n");
+}

@@ -1,65 +1,146 @@
-import Image from "next/image";
+import Link from "next/link";
+import { CommandBlock } from "./components/CommandBlock";
+
+// Flujo end-to-end: crear un evento desde cero, agregarle fecha/tickets/descuento,
+// consultar ventas y ejecutar una acción. Los IDs (EVT_4, DATE_7) son los que
+// devuelve cada comando sobre el estado inicial (el seed llega hasta EVT_3 / DATE_6).
+const QUICKSTART: string[] = [
+  "login --token mock_admin",
+  'events create --name "Mi Festival" --location "Buenos Aires" --status published',
+  'dates create --event EVT_4 --datetime 2026-12-20T21:00:00Z --venue "Movistar Arena"',
+  "tickets create --date DATE_7 --name General --price 18000 --stock 1000",
+  "discounts create --event EVT_4 --code LANZAMIENTO --percent 15",
+  "sales stats --event EVT_4",
+  "actions pause --event EVT_4",
+];
+
+// Ejemplos de solo lectura y de guardrails.
+const READONLY: string[] = [
+  "login --token mock_readonly",
+  "events list",
+  "sales stats --event EVT_1",
+];
+
+const GUARDRAILS: string[] = [
+  "events delete EVT_1 --dry-run",
+  "events delete EVT_1 --yes",
+  "audit list --limit 5",
+];
+
+const TOKENS = [
+  { token: "mock_admin", desc: "Lectura + escritura (crear, editar, borrar, acciones)" },
+  { token: "mock_readonly", desc: "Solo lectura (listar, consultar ventas)" },
+  { token: "mock_invalid", desc: "No existe — sirve para ver el manejo de errores" },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen flex-1 bg-neutral-950 text-neutral-100">
+      <div className="mx-auto max-w-3xl px-6 py-16">
+        {/* Hero */}
+        <header className="mb-12">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="font-mono text-lg font-bold text-green-400">fanz</span>
+            <span className="text-neutral-500">CLI</span>
+          </div>
+          <h1 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+            Ticketing para personas y agentes de IA
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mb-6 max-w-xl text-neutral-400">
+            Un CLI mock de ticketera, usable desde el browser. Comandos predecibles,
+            output JSON estable y guardrails reales para que un agente opere sin
+            riesgo de acciones accidentales.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/terminal"
+            className="inline-flex items-center gap-2 rounded-full bg-green-500 px-5 py-2.5 text-sm font-medium text-neutral-950 transition-colors hover:bg-green-400"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            Abrir la terminal →
+          </Link>
+        </header>
+
+        {/* Tokens */}
+        <section className="mb-12">
+          <h2 className="mb-4 text-lg font-semibold">Tokens mock</h2>
+          <div className="space-y-2">
+            {TOKENS.map((t) => (
+              <div
+                key={t.token}
+                className="flex flex-col gap-1 rounded-md border border-neutral-800 bg-neutral-900 px-4 py-3 sm:flex-row sm:items-center sm:gap-4"
+              >
+                <code className="font-mono text-sm text-green-400">{t.token}</code>
+                <span className="text-sm text-neutral-400">{t.desc}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Quickstart */}
+        <section className="mb-12">
+          <h2 className="mb-2 text-lg font-semibold">Probalo en 30 segundos</h2>
+          <p className="mb-4 text-sm text-neutral-400">
+            Abrí la terminal y pegá estos comandos en orden: crea un evento desde
+            cero, le agrega fecha, tickets y un descuento, consulta ventas y pausa
+            la venta. Cada comando devuelve el id que usa el siguiente.
+          </p>
+          <div className="space-y-2">
+            {QUICKSTART.map((cmd) => (
+              <CommandBlock key={cmd} command={cmd} />
+            ))}
+          </div>
+        </section>
+
+        {/* Solo lectura */}
+        <section className="mb-12">
+          <h2 className="mb-2 text-lg font-semibold">Modo solo lectura</h2>
+          <p className="mb-4 text-sm text-neutral-400">
+            Con <code className="font-mono text-green-400">mock_readonly</code> solo
+            se puede consultar. Cualquier intento de escritura se rechaza con un
+            error accionable.
+          </p>
+          <div className="space-y-2">
+            {READONLY.map((cmd) => (
+              <CommandBlock key={cmd} command={cmd} />
+            ))}
+          </div>
+        </section>
+
+        {/* Guardrails */}
+        <section className="mb-12">
+          <h2 className="mb-2 text-lg font-semibold">Guardrails</h2>
+          <p className="mb-4 text-sm text-neutral-400">
+            <code className="font-mono text-green-400">--dry-run</code> previsualiza
+            sin ejecutar, los borrados exigen{" "}
+            <code className="font-mono text-green-400">--yes</code>, y todo comando
+            ejecutado queda en el audit log.
+          </p>
+          <div className="space-y-2">
+            {GUARDRAILS.map((cmd) => (
+              <CommandBlock key={cmd} command={cmd} />
+            ))}
+          </div>
+        </section>
+
+        {/* Ayuda */}
+        <section className="mb-12">
+          <h2 className="mb-2 text-lg font-semibold">¿Perdido?</h2>
+          <p className="mb-4 text-sm text-neutral-400">
+            Escribí <code className="font-mono text-green-400">help</code> en la
+            terminal para ver todos los recursos, acciones y ejemplos.
+          </p>
+          <CommandBlock command="help" />
+        </section>
+
+        <footer className="border-t border-neutral-800 pt-6 text-sm text-neutral-500">
+          <p>
+            El estado es mock e in-memory: se reinicia con cada deploy.{" "}
+            <Link href="/terminal" className="text-neutral-300 underline-offset-4 hover:underline">
+              Abrir la terminal
+            </Link>
+            .
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }

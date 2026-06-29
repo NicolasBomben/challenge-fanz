@@ -1,0 +1,43 @@
+import type { Discount } from "@/lib/types";
+
+export const seedDiscounts: Discount[] = [
+  {
+    id: "DSC_1",
+    eventId: "EVT_1",
+    code: "ROCK20",
+    type: "percent",
+    value: 20,
+    scope: "event",
+    usageLimit: 100,
+    usageCount: 34,
+    active: true,
+    createdAt: "2026-05-15T10:00:00Z",
+    updatedAt: "2026-05-15T10:00:00Z",
+  },
+  {
+    id: "DSC_2",
+    eventId: null,
+    code: "FANZ10",
+    type: "percent",
+    value: 10,
+    scope: "global",
+    usageLimit: 500,
+    usageCount: 87,
+    active: true,
+    createdAt: "2026-05-01T10:00:00Z",
+    updatedAt: "2026-05-01T10:00:00Z",
+  },
+  {
+    id: "DSC_3",
+    eventId: "EVT_2",
+    code: "ELECTRO5K",
+    type: "fixed",
+    value: 5000,
+    scope: "event",
+    usageLimit: 50,
+    usageCount: 50,
+    active: false,
+    createdAt: "2026-05-10T09:00:00Z",
+    updatedAt: "2026-06-01T12:00:00Z",
+  },
+];
