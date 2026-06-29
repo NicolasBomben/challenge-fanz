@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Bash(npx --yes create-next-app@latest . --ts --eslint --app --no-src-dir --tailwind --import-alias \"@/*\" --use-npm --turbopack)",
+      "Bash(mv /Users/nicolasbomben/Documents/challenge-fanz/context /tmp/fanz-context-backup)",
+      "Bash(npx --yes create-next-app@latest /Users/nicolasbomben/Documents/challenge-fanz --ts --eslint --app --no-src-dir --tailwind --import-alias \"@/*\" --use-npm --turbopack)"
+    ]
+  }
+}
