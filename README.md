@@ -7,7 +7,7 @@ predecibles y guardrails reales.
 
 ## Probarlo
 
-1. Abrí la URL pública (o `npm run dev` → `http://localhost:3000`).
+1. Abrí la URL pública: **https://challenge-fanz-ivory.vercel.app/** (o `npm run dev` → `http://localhost:3000`).
 2. Entrá a **/terminal** (link desde la landing).
 3. Logueate y empezá a tirar comandos.
 
@@ -95,7 +95,7 @@ Más `login` y `help` como comandos especiales.
 La terminal es azúcar sobre un único endpoint. Un agente puede llamarlo directo:
 
 ```bash
-curl -X POST <URL>/api/cli \
+curl -X POST https://challenge-fanz-ivory.vercel.app/api/cli \
   -H "Content-Type: application/json" \
   -d '{"command": "events list", "token": "mock_admin"}'
 ```
@@ -106,6 +106,39 @@ Respuesta (siempre la misma forma, parseable):
 { "ok": true, "command": "events list", "data": [ ... ], "message": "Found 3 event(s)." }
 ```
 
+## Decisiones, supuestos y limitaciones
+
+**Decisiones clave**
+
+- Un solo proyecto Next.js con estado mock in-memory (`lib/store`): el challenge no
+  necesita DB ni auth real.
+- Toda la CLI pasa por un único endpoint `POST /api/cli`, con contrato de salida
+  estable `{ ok, command, data?, message?, error?, dryRun? }`.
+- Errores de negocio/auth → **HTTP 200 con `ok: false`** (contrato más predecible
+  para un agente que mapear códigos 4xx).
+- Modelo `Event → EventDate → TicketType`; `status` (publicación) separado de
+  `saleStatus` (venta), para poder **pausar ventas sin cancelar el evento**.
+- Comandos como registry `resource → action → handler`: agregar un comando es
+  agregar una entrada; alimenta `help` y los errores accionables.
+
+**Supuestos**
+
+- Una sola cuenta mock (`ACC_1`); el token mapea a un rol y a esa cuenta.
+- Borrar un tipo de ticket no borra órdenes históricas.
+- "Fecha futura" se valida contra el reloj real del server.
+- El prefijo `fanz` es opcional y el id es el último posicional.
+
+**Limitaciones / qué haría con más tiempo**
+
+- El estado es in-memory: se reinicia al reiniciar el server y **no se comparte entre
+  cold starts / instancias serverless de Vercel** (los cambios pueden no persistir
+  entre requests).
+- Sin tests automatizados (la arquitectura ya está pensada para testear: funciones
+  puras y aisladas).
+- Sin persistencia, compra mock viva, rate limiting ni paginación en listados grandes.
+
+> Detalle completo en [docs/DECISIONS.md](docs/DECISIONS.md).
+
 ## Desarrollo
 
 ```bash
@@ -114,5 +147,4 @@ npm run dev      # http://localhost:3000
 ```
 
 Stack: Next.js (App Router) + TypeScript, estado mock in-memory, xterm.js para la
-terminal. Las decisiones, supuestos y limitaciones están en
-[docs/DECISIONS.md](docs/DECISIONS.md).
+terminal.
