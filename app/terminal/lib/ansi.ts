@@ -1,7 +1,4 @@
-/**
- * Constantes de color ANSI para escribir output con estilo en xterm.
- * Responsabilidad: presentación del output (no input, no lógica).
- */
+//Constantes de color ANSI para escribir output con estilo en xterm.
 export const RESET = "\x1b[0m";
 export const GREEN = "\x1b[32m";
 export const RED = "\x1b[31m";

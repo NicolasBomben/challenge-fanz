@@ -1,7 +1,4 @@
-/**
- * Teclas crudas que entrega xterm en su callback onData.
- * Responsabilidad: input de teclado (no output, no lógica).
- */
+//Teclas crudas que entrega xterm en su callback onData.
 export const KEY = {
   ENTER: "\r",
   BACKSPACE: "\x7f",

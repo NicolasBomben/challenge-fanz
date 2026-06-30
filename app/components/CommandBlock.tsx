@@ -2,11 +2,6 @@
 
 import { useState } from "react";
 
-/**
- * Bloque de comando copiable. Muestra un comando en monoespaciado con un botón
- * "copiar" que lo pasa al portapapeles. Es client-side porque usa el clipboard
- * y estado local para el feedback ("copiado").
- */
 export function CommandBlock({ command }: { command: string }) {
   const [copied, setCopied] = useState(false);
 
@@ -15,8 +10,8 @@ export function CommandBlock({ command }: { command: string }) {
       await navigator.clipboard.writeText(command);
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
-    } catch {
-      // Si el navegador bloquea el clipboard, no rompemos nada.
+    } catch (err) {
+      console.error("No se pudo copiar al portapapeles:", err);
     }
   };
 

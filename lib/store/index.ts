@@ -4,7 +4,6 @@ import { initCounter } from "./helpers/id";
 
 let state: StoreState = createInitialState();
 
-// Sync counters with seed data so new IDs don't collide
 initCounter("EVT", 3);
 initCounter("DATE", 6);
 initCounter("TCK", 9);

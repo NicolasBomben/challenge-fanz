@@ -6,10 +6,6 @@ export const metadata = {
   description: "Web terminal para operar la ticketera mock de Fanz.",
 };
 
-/**
- * Página /terminal: header con título + link al instructivo, y la web terminal
- * ocupando el resto de la pantalla. El componente Terminal es client-side.
- */
 export default function TerminalPage() {
   return (
     <div className="flex h-screen flex-col bg-neutral-950 text-neutral-100">

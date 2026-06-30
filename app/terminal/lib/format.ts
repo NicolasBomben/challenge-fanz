@@ -1,13 +1,7 @@
 import type { CLIResponse } from "@/lib/types";
 import { RESET, GREEN, RED, YELLOW, DIM, BOLD } from "./ansi";
 
-/**
- * Formateo de texto para la terminal. Funciones PURAS: reciben datos, devuelven
- * strings con códigos ANSI (usando "\n" como salto; el caller los convierte a
- * "\r\n" al escribir en xterm). No dependen de xterm ni del DOM → testeables.
- */
-
-/** Texto de bienvenida que se muestra al abrir la terminal. */
+// Texto de bienvenida que se muestra al abrir la terminal.
 export function banner(): string {
   return (
     `${BOLD}${GREEN}Fanz CLI${RESET} — ticketing para personas y agentes\n` +
@@ -16,13 +10,9 @@ export function banner(): string {
   );
 }
 
-/**
- * Convierte un CLIResponse en el texto a mostrar:
- *   - error      → línea roja
- *   - message    → verde (o amarillo si es dry-run)
- *   - data       → JSON formateado en gris
- * Devuelve "" si no hay nada que mostrar (ok sin message ni data).
- */
+
+//Convierte un CLIResponse en el texto a mostrar:
+
 export function renderResponse(res: CLIResponse): string {
   if (!res.ok) {
     return `${RED}✗ ${res.error ?? "Unknown error"}${RESET}`;

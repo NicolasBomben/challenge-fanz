@@ -28,28 +28,27 @@ const GUARDRAILS: string[] = [
 ];
 
 const TOKENS = [
-  { token: "mock_admin", desc: "Lectura + escritura (crear, editar, borrar, acciones)" },
+  {
+    token: "mock_admin",
+    desc: "Lectura + escritura (crear, editar, borrar, acciones)",
+  },
   { token: "mock_readonly", desc: "Solo lectura (listar, consultar ventas)" },
-  { token: "mock_invalid", desc: "No existe — sirve para ver el manejo de errores" },
+  {
+    token: "mock_invalid",
+    desc: "No existe — sirve para ver el manejo de errores",
+  },
 ];
 
 export default function Home() {
   return (
     <div className="min-h-screen flex-1 bg-neutral-950 text-neutral-100">
       <div className="mx-auto max-w-3xl px-6 py-16">
-        {/* Hero */}
         <header className="mb-12">
-          <div className="mb-3 flex items-center gap-2">
-            <span className="font-mono text-lg font-bold text-green-400">fanz</span>
-            <span className="text-neutral-500">CLI</span>
-          </div>
           <h1 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
             Ticketing para personas y agentes de IA
           </h1>
           <p className="mb-6 max-w-xl text-neutral-400">
-            Un CLI mock de ticketera, usable desde el browser. Comandos predecibles,
-            output JSON estable y guardrails reales para que un agente opere sin
-            riesgo de acciones accidentales.
+            Un CLI mock de ticketera, usable desde el browser.
           </p>
           <Link
             href="/terminal"
@@ -68,7 +67,9 @@ export default function Home() {
                 key={t.token}
                 className="flex flex-col gap-1 rounded-md border border-neutral-800 bg-neutral-900 px-4 py-3 sm:flex-row sm:items-center sm:gap-4"
               >
-                <code className="font-mono text-sm text-green-400">{t.token}</code>
+                <code className="font-mono text-sm text-green-400">
+                  {t.token}
+                </code>
                 <span className="text-sm text-neutral-400">{t.desc}</span>
               </div>
             ))}
@@ -79,9 +80,9 @@ export default function Home() {
         <section className="mb-12">
           <h2 className="mb-2 text-lg font-semibold">Probalo en 30 segundos</h2>
           <p className="mb-4 text-sm text-neutral-400">
-            Abrí la terminal y pegá estos comandos en orden: crea un evento desde
-            cero, le agrega fecha, tickets y un descuento, consulta ventas y pausa
-            la venta. Cada comando devuelve el id que usa el siguiente.
+            Abrí la terminal y pegá estos comandos en orden: crea un evento
+            desde cero, le agrega fecha, tickets y un descuento, consulta ventas
+            y pausa la venta. Cada comando devuelve el id que usa el siguiente.
           </p>
           <div className="space-y-2">
             {QUICKSTART.map((cmd) => (
@@ -94,9 +95,9 @@ export default function Home() {
         <section className="mb-12">
           <h2 className="mb-2 text-lg font-semibold">Modo solo lectura</h2>
           <p className="mb-4 text-sm text-neutral-400">
-            Con <code className="font-mono text-green-400">mock_readonly</code> solo
-            se puede consultar. Cualquier intento de escritura se rechaza con un
-            error accionable.
+            Con <code className="font-mono text-green-400">mock_readonly</code>{" "}
+            solo se puede consultar. Cualquier intento de escritura se rechaza
+            con un error accionable.
           </p>
           <div className="space-y-2">
             {READONLY.map((cmd) => (
@@ -109,10 +110,10 @@ export default function Home() {
         <section className="mb-12">
           <h2 className="mb-2 text-lg font-semibold">Guardrails</h2>
           <p className="mb-4 text-sm text-neutral-400">
-            <code className="font-mono text-green-400">--dry-run</code> previsualiza
-            sin ejecutar, los borrados exigen{" "}
-            <code className="font-mono text-green-400">--yes</code>, y todo comando
-            ejecutado queda en el audit log.
+            <code className="font-mono text-green-400">--dry-run</code>{" "}
+            previsualiza sin ejecutar, los borrados exigen{" "}
+            <code className="font-mono text-green-400">--yes</code>, y todo
+            comando ejecutado queda en el audit log.
           </p>
           <div className="space-y-2">
             {GUARDRAILS.map((cmd) => (
@@ -130,16 +131,6 @@ export default function Home() {
           </p>
           <CommandBlock command="help" />
         </section>
-
-        <footer className="border-t border-neutral-800 pt-6 text-sm text-neutral-500">
-          <p>
-            El estado es mock e in-memory: se reinicia con cada deploy.{" "}
-            <Link href="/terminal" className="text-neutral-300 underline-offset-4 hover:underline">
-              Abrir la terminal
-            </Link>
-            .
-          </p>
-        </footer>
       </div>
     </div>
   );

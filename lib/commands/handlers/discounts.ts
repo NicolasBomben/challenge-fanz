@@ -24,17 +24,10 @@ import {
 // Formato de código: 3-20 alfanuméricos (se guarda en mayúsculas).
 const CODE_PATTERN = /^[A-Za-z0-9]{3,20}$/;
 
-/**
- * Resuelve el tipo y valor del descuento desde los shorthands del PDF.
- *   --percent 20  → { type: "percent", value: 20 }
- *   --fixed 5000  → { type: "fixed",   value: 5000 }
- *
- * Reglas: exactamente uno de los dos; valor válido y en rango
- * (percent 1-100, fixed > 0). En modo "update" ambos pueden faltar (undefined).
- */
+//Resuelve el tipo y valor del descuento desde los shorthands del PDF.
 function resolveAmount(
   flags: Record<string, string | boolean>,
-  { required }: { required: boolean }
+  { required }: { required: boolean },
 ): { type?: DiscountType; value?: number; error?: string } {
   const percent = readNumber(flags, "percent");
   if (percent.error) return { error: percent.error };
@@ -51,14 +44,18 @@ function resolveAmount(
 
   if (!hasPercent && !hasFixed) {
     if (required) {
-      return { error: "A discount needs --percent <1-100> or --fixed <amount>." };
+      return {
+        error: "A discount needs --percent <1-100> or --fixed <amount>.",
+      };
     }
     return { type: undefined, value: undefined };
   }
 
   if (hasPercent) {
     if (percent.value! <= 0 || percent.value! > 100) {
-      return { error: `--percent must be between 1 and 100, got ${percent.value}.` };
+      return {
+        error: `--percent must be between 1 and 100, got ${percent.value}.`,
+      };
     }
     return { type: "percent", value: percent.value };
   }
@@ -69,7 +66,7 @@ function resolveAmount(
   return { type: "fixed", value: fixed.value };
 }
 
-/** Valida el formato del código (sin tocar unicidad, que la valida el repository). */
+//Valida el formato del código (sin tocar unicidad, que la valida el repository).
 function validateCode(code: string): string | null {
   if (!CODE_PATTERN.test(code)) {
     return `Invalid code "${code}". Use 3-20 alphanumeric characters (e.g. DEMO20).`;
@@ -77,11 +74,9 @@ function validateCode(code: string): string | null {
   return null;
 }
 
-/**
- * fanz discounts list [--event <EVT_id>]
- * Lista descuentos. Sin filtro: todos. Con --event: los del evento + los globales.
- * Solo lectura.
- */
+//Lista descuentos. Sin filtro: todos. Con --event: los del evento + los globales.
+//Solo lectura.
+
 function listDiscounts(ctx: CommandContext): CommandResult {
   const { flags } = ctx.parsed;
 
@@ -104,16 +99,16 @@ function listDiscounts(ctx: CommandContext): CommandResult {
   };
 }
 
-/**
- * fanz discounts get (<DSC_id> | --code <CODE>)
- * Devuelve un descuento por ID o por código. Solo lectura.
- */
+//Devuelve un descuento por ID o por código. Solo lectura.
 function getDiscount(ctx: CommandContext): CommandResult {
   const code = readString(ctx.parsed.flags, "code");
   if (code !== undefined) {
     const discount = getDiscountByCode(ctx.state, code);
     if (!discount) {
-      return { ok: false, error: `Discount with code "${code.toUpperCase()}" not found.` };
+      return {
+        ok: false,
+        error: `Discount with code "${code.toUpperCase()}" not found.`,
+      };
     }
     return { ok: true, data: discount };
   }
@@ -123,14 +118,7 @@ function getDiscount(ctx: CommandContext): CommandResult {
   return { ok: true, data: found.entity };
 }
 
-/**
- * fanz discounts create --code X (--percent N | --fixed N) [--event <EVT_id>] [--limit N]
- *
- * Crea un descuento. Escritura. Soporta --dry-run.
- * Validación: formato del código; un único tipo (percent/fixed) con valor en rango;
- * código único (lo valida el repository); si lleva --event, el evento debe existir.
- * Sin --event el descuento es global (eventId: null).
- */
+//Crea un descuento. Escritura. Soporta --dry-run.
 function createDiscountCmd(ctx: CommandContext): CommandResult {
   const { flags } = ctx.parsed;
 
@@ -138,7 +126,8 @@ function createDiscountCmd(ctx: CommandContext): CommandResult {
   if (!code) {
     return {
       ok: false,
-      error: "discounts create requires --code. Usage: fanz discounts create --code DEMO20 --percent 20.",
+      error:
+        "discounts create requires --code. Usage: fanz discounts create --code DEMO20 --percent 20.",
     };
   }
   const codeError = validateCode(code);
@@ -147,7 +136,6 @@ function createDiscountCmd(ctx: CommandContext): CommandResult {
   const amount = resolveAmount(flags, { required: true });
   if (amount.error) return { ok: false, error: amount.error };
 
-  // Scope: con --event es event-scoped (validamos que exista); sin él, global.
   let eventId: string | null = null;
   let scope: "event" | "global" = "global";
   if (readString(flags, "event") !== undefined) {
@@ -160,9 +148,12 @@ function createDiscountCmd(ctx: CommandContext): CommandResult {
   const limit = readNumber(flags, "limit");
   if (limit.error) return { ok: false, error: limit.error };
   if (limit.value !== undefined && limit.value <= 0) {
-    return { ok: false, error: `--limit must be greater than 0, got ${limit.value}.` };
+    return {
+      ok: false,
+      error: `--limit must be greater than 0, got ${limit.value}.`,
+    };
   }
-  const usageLimit = limit.value ?? 100; // default razonable si no se especifica
+  const usageLimit = limit.value ?? 100;
 
   const data = {
     eventId,
@@ -177,7 +168,6 @@ function createDiscountCmd(ctx: CommandContext): CommandResult {
     return dryRunResult(`create discount "${data.code}"`, data);
   }
 
-  // El repository valida unicidad del código y devuelve un error accionable.
   const result = createDiscount(ctx.state, data);
   if (result.error) return { ok: false, error: result.error };
 
@@ -188,13 +178,8 @@ function createDiscountCmd(ctx: CommandContext): CommandResult {
   };
 }
 
-/**
- * fanz discounts update <DSC_id> [--code X] [--percent N|--fixed N] [--limit N] [--active true|false]
- *
- * Actualiza un descuento. Escritura. Soporta --dry-run.
- * Validación: existe; al menos un campo; formato de código; valor en rango;
- * código único (repository).
- */
+//Actualiza un descuento. Escritura. Soporta --dry-run.
+
 function updateDiscountCmd(ctx: CommandContext): CommandResult {
   const { flags } = ctx.parsed;
 
@@ -202,7 +187,9 @@ function updateDiscountCmd(ctx: CommandContext): CommandResult {
   if (!found.ok) return found.error;
   const { id } = found;
 
-  const changes: Partial<Pick<Discount, "code" | "type" | "value" | "usageLimit" | "active">> = {};
+  const changes: Partial<
+    Pick<Discount, "code" | "type" | "value" | "usageLimit" | "active">
+  > = {};
 
   const code = readString(flags, "code");
   if (code !== undefined) {
@@ -221,7 +208,11 @@ function updateDiscountCmd(ctx: CommandContext): CommandResult {
   const limit = readNumber(flags, "limit");
   if (limit.error) return { ok: false, error: limit.error };
   if (limit.value !== undefined) {
-    if (limit.value <= 0) return { ok: false, error: `--limit must be greater than 0, got ${limit.value}.` };
+    if (limit.value <= 0)
+      return {
+        ok: false,
+        error: `--limit must be greater than 0, got ${limit.value}.`,
+      };
     changes.usageLimit = limit.value;
   }
 
@@ -232,7 +223,8 @@ function updateDiscountCmd(ctx: CommandContext): CommandResult {
   if (Object.keys(changes).length === 0) {
     return {
       ok: false,
-      error: "discounts update requires at least one field to change: --code, --percent/--fixed, --limit, --active.",
+      error:
+        "discounts update requires at least one field to change: --code, --percent/--fixed, --limit, --active.",
     };
   }
 
@@ -243,13 +235,14 @@ function updateDiscountCmd(ctx: CommandContext): CommandResult {
   const result = updateDiscount(ctx.state, id, changes);
   if (result.error) return { ok: false, error: result.error };
 
-  return { ok: true, data: result.discount, message: `Discount ${id} updated.` };
+  return {
+    ok: true,
+    data: result.discount,
+    message: `Discount ${id} updated.`,
+  };
 }
 
-/**
- * fanz discounts delete <DSC_id> [--yes] [--dry-run]
- * Borra un descuento. Destructivo. Guardrails: --dry-run y --yes.
- */
+//Borra un descuento. Destructivo. Guardrails: --dry-run y --yes.
 function deleteDiscountCmd(ctx: CommandContext): CommandResult {
   const { flags } = ctx.parsed;
 
@@ -258,19 +251,25 @@ function deleteDiscountCmd(ctx: CommandContext): CommandResult {
   const { id, entity: discount } = found;
 
   if (wantsDryRun(flags)) {
-    return dryRunResult(`delete discount ${id} ("${discount.code}")`, { discount });
+    return dryRunResult(`delete discount ${id} ("${discount.code}")`, {
+      discount,
+    });
   }
 
-  const blocked = requireConfirmation(flags, `discount ${id} ("${discount.code}")`);
+  const blocked = requireConfirmation(
+    flags,
+    `discount ${id} ("${discount.code}")`,
+  );
   if (blocked) return blocked;
 
   deleteDiscount(ctx.state, id);
-  return { ok: true, data: { id, deleted: true }, message: `Discount ${id} deleted.` };
+  return {
+    ok: true,
+    data: { id, deleted: true },
+    message: `Discount ${id} deleted.`,
+  };
 }
 
-/**
- * Mapa de acciones del recurso "discounts", consumido por el registry central.
- */
 export const discountCommands: Record<string, CommandHandler> = {
   list: listDiscounts,
   get: getDiscount,

@@ -21,11 +21,7 @@ import {
   dryRunResult,
 } from "../helpers";
 
-/**
- * fanz dates list --event <EVT_id>
- * Lista las fechas/funciones de un evento. Solo lectura.
- * El evento padre se referencia por --event (recurso anidado).
- */
+//Lista las fechas/funciones de un evento. Solo lectura.
 function listDates(ctx: CommandContext): CommandResult {
   const ref = requireRef(ctx, "event", getEventById, "event");
   if (!ref.ok) return ref.error;
@@ -41,10 +37,7 @@ function listDates(ctx: CommandContext): CommandResult {
   };
 }
 
-/**
- * fanz dates get <DATE_id>
- * Devuelve una fecha por ID. Solo lectura.
- */
+//Devuelve una fecha por ID. Solo lectura.
 function getDate(ctx: CommandContext): CommandResult {
   const found = requireEntity(ctx, getEventDateById, "date");
   if (!found.ok) return found.error;
@@ -52,14 +45,7 @@ function getDate(ctx: CommandContext): CommandResult {
   return { ok: true, data: found.entity };
 }
 
-/**
- * fanz dates create --event <EVT_id> --datetime <ISO> --venue "..."
- *                   [--status active|paused|sold_out|closed]
- *
- * Crea una fecha/función para un evento. Escritura. Soporta --dry-run.
- * Validación: el evento debe existir; --datetime requerido, válido y futuro;
- * --venue requerido; status enum válido.
- */
+// Crea una fecha/función para un evento. Escritura. Soporta --dry-run.
 function createDateCmd(ctx: CommandContext): CommandResult {
   const { flags } = ctx.parsed;
 
@@ -75,33 +61,48 @@ function createDateCmd(ctx: CommandContext): CommandResult {
     };
   }
 
-  const datetime = validateDateTime(rawDatetime, "datetime", { mustBeFuture: true });
+  const datetime = validateDateTime(rawDatetime, "datetime", {
+    mustBeFuture: true,
+  });
   if (datetime.error) return { ok: false, error: datetime.error };
 
   const venue = readString(flags, "venue");
   if (!venue) {
-    return { ok: false, error: 'dates create requires --venue. Usage: ... --venue "Estadio Obras".' };
+    return {
+      ok: false,
+      error:
+        'dates create requires --venue. Usage: ... --venue "Estadio Obras".',
+    };
   }
 
-  const status = validateEnum(readString(flags, "status"), SALE_STATUSES, "status");
+  const status = validateEnum(
+    readString(flags, "status"),
+    SALE_STATUSES,
+    "status",
+  );
   if (status.error) return { ok: false, error: status.error };
 
-  const data = { eventId: ref.id, datetime: datetime.value!, venue, status: status.value };
+  const data = {
+    eventId: ref.id,
+    datetime: datetime.value!,
+    venue,
+    status: status.value,
+  };
 
   if (wantsDryRun(flags)) {
     return dryRunResult(`create date for event ${ref.id}`, data);
   }
 
   const eventDate = createEventDate(ctx.state, data);
-  return { ok: true, data: eventDate, message: `Date ${eventDate.id} created for event ${ref.id}.` };
+  return {
+    ok: true,
+    data: eventDate,
+    message: `Date ${eventDate.id} created for event ${ref.id}.`,
+  };
 }
 
-/**
- * fanz dates update <DATE_id> [--datetime <ISO>] [--venue "..."] [--status ...]
- *
- * Actualiza campos de una fecha. Escritura. Soporta --dry-run.
- * Validación: la fecha debe existir; al menos un campo; datetime futuro; enum válido.
- */
+//Actualiza campos de una fecha. Escritura. Soporta --dry-run.
+//Validación: la fecha debe existir; al menos un campo; datetime futuro; enum válido.
 function updateDateCmd(ctx: CommandContext): CommandResult {
   const { flags } = ctx.parsed;
 
@@ -113,7 +114,9 @@ function updateDateCmd(ctx: CommandContext): CommandResult {
 
   const rawDatetime = readString(flags, "datetime");
   if (rawDatetime !== undefined) {
-    const datetime = validateDateTime(rawDatetime, "datetime", { mustBeFuture: true });
+    const datetime = validateDateTime(rawDatetime, "datetime", {
+      mustBeFuture: true,
+    });
     if (datetime.error) return { ok: false, error: datetime.error };
     changes.datetime = datetime.value;
   }
@@ -121,14 +124,19 @@ function updateDateCmd(ctx: CommandContext): CommandResult {
   const venue = readString(flags, "venue");
   if (venue !== undefined) changes.venue = venue;
 
-  const status = validateEnum(readString(flags, "status"), SALE_STATUSES, "status");
+  const status = validateEnum(
+    readString(flags, "status"),
+    SALE_STATUSES,
+    "status",
+  );
   if (status.error) return { ok: false, error: status.error };
   if (status.value !== undefined) changes.status = status.value;
 
   if (Object.keys(changes).length === 0) {
     return {
       ok: false,
-      error: "dates update requires at least one field to change: --datetime, --venue, --status.",
+      error:
+        "dates update requires at least one field to change: --datetime, --venue, --status.",
     };
   }
 
@@ -140,12 +148,8 @@ function updateDateCmd(ctx: CommandContext): CommandResult {
   return { ok: true, data: updated, message: `Date ${id} updated.` };
 }
 
-/**
- * fanz dates delete <DATE_id> [--yes] [--dry-run]
- *
- * Borra una fecha y, en cascada, sus tipos de ticket. Destructivo.
- * Guardrails: --dry-run (preview con cascada) y --yes (confirmación obligatoria).
- */
+//Borra una fecha y, en cascada, sus tipos de ticket. Destructivo.
+//Guardrails: --dry-run (preview con cascada) y --yes (confirmación obligatoria).
 function deleteDateCmd(ctx: CommandContext): CommandResult {
   const { flags } = ctx.parsed;
 
@@ -157,10 +161,16 @@ function deleteDateCmd(ctx: CommandContext): CommandResult {
   const cascade = { ticketTypes: ticketCount };
 
   if (wantsDryRun(flags)) {
-    return dryRunResult(`delete date ${id}`, { date: found.entity, willAlsoDelete: cascade });
+    return dryRunResult(`delete date ${id}`, {
+      date: found.entity,
+      willAlsoDelete: cascade,
+    });
   }
 
-  const blocked = requireConfirmation(flags, `date ${id} and its ${ticketCount} ticket type(s)`);
+  const blocked = requireConfirmation(
+    flags,
+    `date ${id} and its ${ticketCount} ticket type(s)`,
+  );
   if (blocked) return blocked;
 
   deleteEventDate(ctx.state, id);
@@ -171,9 +181,6 @@ function deleteDateCmd(ctx: CommandContext): CommandResult {
   };
 }
 
-/**
- * Mapa de acciones del recurso "dates", consumido por el registry central.
- */
 export const dateCommands: Record<string, CommandHandler> = {
   list: listDates,
   get: getDate,
